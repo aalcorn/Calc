@@ -16,7 +16,8 @@ public class MainActivity extends AppCompatActivity {
     String operation = "";
     String currentEntry = "";
     String displayText = "";
-    double answer;
+    boolean firstFlag = true;
+    boolean decimalUsed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,26 +46,33 @@ public class MainActivity extends AppCompatActivity {
         //t.setText(buttonContent);
 
         //if it was an operation, append the operation to the display string and clear the current entry string, update text
-        if(id.equals("addition") && operation.equals("")) {
+        if(id.equals("addition")) {
             functionChosen(id,buttonContent);
         }
-        else if(id.equals("subtraction") && operation.equals("")) {
+        else if(id.equals("subtraction")) {
             functionChosen(id,buttonContent);
         }
-        else if(id.equals("multiplication") && operation.equals("")) {
+        else if(id.equals("multiplication")) {
             functionChosen(id,buttonContent);
         }
-        else if(id.equals("division") && operation.equals("")) {
+        else if(id.equals("division")) {
             functionChosen(id,buttonContent);
         }
-        else if(id.equals("percent") && operation.equals("")) {
-            functionChosen(id, buttonContent);
+        else if(id.equals("percent")) {
+            if(!currentEntry.equals("") && !firstFlag) {
+                t.setText(displayText + currentEntry + "% ");
+                currentEntry = Double.toString(firstOperand * Double.parseDouble(currentEntry) * 0.01);
+
+            }
         }
-        else if(id.equals("sign") && !currentEntry.equals("")) {
-            double d;
-            d = Double.parseDouble(currentEntry);
-            d = d*-1;
-            currentEntry = Double.toString(d);
+        else if(id.equals("sign")) {
+            if (!currentEntry.equals("")) {
+                double d;
+                d = Double.parseDouble(currentEntry);
+                d = d*-1;
+                currentEntry = Double.toString(d);
+                t.setText(displayText + currentEntry);
+            }
             //figure out how to update the view correctly
         }
         else if(id.equals("clear")) {
@@ -74,19 +82,36 @@ public class MainActivity extends AppCompatActivity {
             currentEntry = "";
             displayText = "";
             t.setText("0");
+            firstFlag = true;
+            decimalUsed = false;
         }
         else if(id.equals("sqrt")) {
-            functionChosen(id,buttonContent);
+            if (!currentEntry.equals("")) {
+                double d;
+                d = Double.parseDouble(currentEntry);
+                d = Math.sqrt(d);
+                currentEntry = Double.toString(d);
+                t.setText(displayText + currentEntry);
+            }
         }
         //if it was equals, append "=" to the display text, perform the operation corresponding to the operation string on the operand(s)
-        else if(id.equals("equals") || !currentEntry.equals("")) {
+        else if(id.equals("equals") && !currentEntry.equals("")) {
             displayText += currentEntry + " " + buttonContent + " ";
             executeFunction();
         }
         //if it was a number or a decimal, append it to the display string and the current entry string, update text
         else {
-            currentEntry += buttonContent;
-            t.setText(displayText + currentEntry);
+            if(!buttonContent.equals(".")) {
+                currentEntry += buttonContent;
+                t.setText(displayText + currentEntry);
+            }
+            else {
+                if(decimalUsed == false) {
+                    currentEntry += buttonContent;
+                    decimalUsed = true;
+                    t.setText(displayText + currentEntry);
+                }
+            }
         }
 
     }
@@ -95,39 +120,70 @@ public class MainActivity extends AppCompatActivity {
         TextView t = (TextView) findViewById(R.id.CalcView);
         if (currentEntry != "") {
             secondOperand = Double.parseDouble(currentEntry);
+            currentEntry = "";
         }
         else {
             secondOperand = 0.0;
         }
         if(operation.equals("addition")) {
-            answer = firstOperand + secondOperand;
+            firstOperand = firstOperand + secondOperand;
         }
         else if(operation.equals("subtraction")) {
-            answer = firstOperand - secondOperand;
+            firstOperand = firstOperand - secondOperand;
         }
         else if(operation.equals("multiplication")) {
-            answer = firstOperand * secondOperand;
+            firstOperand = firstOperand * secondOperand;
         }
         else if(operation.equals("division")) {
-            answer = firstOperand / secondOperand;
+            firstOperand = firstOperand / secondOperand;
         }
-        else if(operation.equals("sqrt")) {
-            answer = Math.sqrt(firstOperand);
-        }
+
         else{
             t.setText("ERR");
         }
-        displayText += answer;
+        displayText += firstOperand;
         t.setText(displayText);
+        decimalUsed = false;
     }
 
+
+    //functionChosen(id,buttonContent);
     public void functionChosen(String id, String buttonContent) {
+
+
+        if(currentEntry != "") {
+            if (firstFlag || operation.equals("addition")) {
+                firstOperand += Double.parseDouble(currentEntry);
+                currentEntry = "";
+                displayText = firstOperand + " " + buttonContent + " ";
+            }
+            else if (operation.equals("subtraction")) {
+                firstOperand -= Double.parseDouble(currentEntry);
+                currentEntry = "";
+                displayText = firstOperand + " " + buttonContent + " ";
+            }
+            else if (operation.equals("division")) {
+                firstOperand /= Double.parseDouble(currentEntry);
+                currentEntry = "";
+                displayText = firstOperand + " " + buttonContent + " ";
+            }
+            else if (operation.equals("multiplication")) {
+                firstOperand *= Double.parseDouble(currentEntry);
+                currentEntry = "";
+                displayText = firstOperand + " " + buttonContent + " ";
+            }
+            else if (operation.equals("sqrt")) {
+                firstOperand = Math.sqrt(firstOperand);
+                currentEntry = "";
+                displayText = firstOperand + " " + buttonContent + " ";
+            }
+        }
+
         operation = id;
-        firstOperand += Double.parseDouble(currentEntry);
-        displayText += currentEntry + " " + buttonContent + " ";
         TextView t = (TextView) findViewById(R.id.CalcView);
         t.setText(displayText);
-        currentEntry = "";
+        firstFlag = false;
+        decimalUsed = false;
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -149,5 +205,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+
     }
 }
